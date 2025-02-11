@@ -1,0 +1,36 @@
+.ImageSlider {
+  position: relative;
+  width: 100%;
+  height: 300px;
+  overflow: hidden;
+  background-color: white;
+}
+
+.ImageSlider .slick-dots {
+  bottom: 20px;
+}
+
+.ImageSlider .slick-dots li button:before {
+  color: white;
+  font-size: 12px;
+}
+
+.ImageSlider .slick-dots li.slick-active button:before {
+  color: black;
+}
+
+.slider-image {
+  width: 100%;
+  height: 300px;
+  object-fit: cover;
+}
+
+.ImageSlider h2 {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  font-size: 24px;
+  text-align: center;
+}
