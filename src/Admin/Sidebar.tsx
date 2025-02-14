@@ -19,7 +19,6 @@ const Sidebar: React.FC = () => {
   const handleLogout = () => {
     sessionStorage.removeItem("adminLoggedIn");
     dispatch(logout());
-    navigate("/");
   };
 
   if (!isLoggedIn) return null;

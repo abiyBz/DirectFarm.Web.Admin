@@ -1,11 +1,10 @@
 import React, { useEffect } from "react";
-import { Link, NavLink, useNavigate } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { logout, loginSuccess } from "../redux/authSlice";
 import { AppDispatch, RootState } from "../redux/store";
 
 const Sidebar: React.FC = () => {
-  const navigate = useNavigate();
   const isLoggedIn = useSelector((state: RootState) => state.auth.isLoggedIn);
   const dispatch: AppDispatch = useDispatch();
 
