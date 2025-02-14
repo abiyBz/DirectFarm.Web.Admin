@@ -2,11 +2,11 @@ import React, { useState } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import "./Warehouse.css";
 import WareSide from "./WareSide";
-import Delivery from "./Delivery";
+
 import Inventory from "./Inventory";
 import WareDashboard from "./WareDashboard";
 import FarmerRegistration from "./FarmerRegistration";
-import WarehouseReport from "./WarehouseReport";
+
 import WarehouseLogin from "./WarehouseLogin";
 
 const WarehouseLayout: React.FC = () => {
@@ -64,9 +64,8 @@ const WarehouseLayout: React.FC = () => {
             <Route path="/WarehouseLogin" element={<WarehouseLogin />} />
             <Route path="/" element={<WareDashboard />} />
             <Route path="/Inventory" element={<Inventory />} />
-            <Route path="/delivery" element={<Delivery />} />
+
             <Route path="/registerfarmer" element={<FarmerRegistration />} />
-            <Route path="/warehousereport" element={<WarehouseReport />} />
           </Routes>
         </div>
       </div>

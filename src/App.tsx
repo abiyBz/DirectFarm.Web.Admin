@@ -28,27 +28,25 @@ const App: React.FC = () => {
     <Router>
       {/* The Router is only placed here */}
       <Routes>
-        <Route path="*" element={<MainLayout />} />
+        {/* <Route path="*" element={<MainLayout />} />
         <Route path="/admin" element={<AdminLayout />} />
-        <Route path="/warehouse" element={<WarehouseLayout />} />
+        <Route path="/warehouse" element={<WarehouseLayout />} /> */}
 
         {/* Use this to work on admin layouts */}
         {/* <Route path="/login" element={<LoginAdmin />} />
-        <Route
-          path="*"
-          element={
+        <Route path="*" element={
             isLoggedIn ? <AdminLayout /> : <Navigate to="/login" replace />
           }
-        /> */}
+        /> 
 
         {/* Use this to work on warehouse layouts */}
-        {/* <Route path="/login" element={<WarehouseLogin />} />
+        <Route path="/login" element={<WarehouseLogin />} />
         <Route
           path="*"
           element={
             isLoggedIn ? <WarehouseLayout /> : <Navigate to="/login" replace />
           }
-        /> */}
+        />
       </Routes>
     </Router>
   );

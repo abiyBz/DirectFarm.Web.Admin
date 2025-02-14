@@ -19,7 +19,6 @@ const Sidebar: React.FC = () => {
   const handleLogout = () => {
     sessionStorage.removeItem("managerLoggedIn");
     dispatch(logout());
-    navigate("/");
   };
 
   if (!isLoggedIn) return null; // Only render if logged in
@@ -68,10 +67,9 @@ const Sidebar: React.FC = () => {
         <ul className="space-y-2">
           {[
             { path: "/", label: "Dashboard" },
-            { path: "/delivery", label: "Delivery" },
+
             { path: "/inventory", label: "Add Farmer's Product" },
             { path: "/registerfarmer", label: "Farmer Registration" },
-            { path: "/warehousereport", label: "Warehouse Reports" },
           ].map((item, index) => (
             <li key={index}>
               <NavLink

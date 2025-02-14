@@ -162,7 +162,6 @@ const Products = () => {
               cy="50%"
               outerRadius={150}
               paddingAngle={1}
-              label
             >
               {categoryData.map((entry, index) => (
                 <Cell key={`cell-${index}`} fill={entry.fill} />

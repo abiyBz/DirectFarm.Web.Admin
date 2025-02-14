@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 type ReportData = {
-  id: number;
+  id: string;
   itemName: string;
   category: string;
   quantity: number;
@@ -10,59 +11,92 @@ type ReportData = {
   date: string;
 };
 
-const initialReportData: ReportData[] = [
-  {
-    id: 1,
-    itemName: "Tomatoes",
-    category: "Fresh Produce",
-    quantity: 500,
-    status: "In Stock",
-    date: "2024-12-20",
-  },
-  {
-    id: 2,
-    itemName: "Potatoes",
-    category: "Fresh Produce",
-    quantity: 50,
-    status: "Low Stock",
-    date: "2024-12-21",
-  },
-  {
-    id: 3,
-    itemName: "Cabbages",
-    category: "Fresh Produce",
-    quantity: 0,
-    status: "Out of Stock",
-    date: "2024-12-22",
-  },
-  {
-    id: 4,
-    itemName: "Rice",
-    category: "Dry Goods",
-    quantity: 1000,
-    status: "In Stock",
-    date: "2024-12-23",
-  },
-];
-
 const WarehouseReport: React.FC = () => {
   const [startDate, setStartDate] = useState<string>("");
   const [endDate, setEndDate] = useState<string>("");
   const [statusFilter, setStatusFilter] = useState<string>("All");
-  const [filteredData, setFilteredData] =
-    useState<ReportData[]>(initialReportData);
+  const [filteredData, setFilteredData] = useState<ReportData[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
   const navigate = useNavigate();
 
   useEffect(() => {
     const loginStatus = sessionStorage.getItem("managerLoggedIn");
     if (!loginStatus) {
-      navigate("/WarehouseLogin"); // Redirect if already logged in
+      navigate("/WarehouseLogin");
+      return;
     }
+
+    fetchWarehouseData();
   }, [navigate]);
 
+  const fetchWarehouseData = async () => {
+    try {
+      const parsedResponse = JSON.parse(
+        sessionStorage.getItem("managerLoggedIn") || "{}"
+      );
+      const managerId = parsedResponse.data.object.id;
+
+      const warehousesResponse = await axios.post<{
+        responseStatus: number;
+        data: { id: string; name: string; location: string }[];
+      }>(
+        "http://localhost:5122/api/Warehouse/GetManagersWarehouses",
+        { id: managerId },
+        {
+          headers: { accept: "text/plain", "Content-Type": "application/json" },
+        }
+      );
+
+      const allProducts: ReportData[] = [];
+      for (const warehouse of warehousesResponse.data.data) {
+        const productsResponse = await axios.post<{
+          responseStatus: number;
+          data: {
+            id: string;
+            product: { name: string; category: string };
+            quantityAvailable: number;
+            addedAt: string;
+          }[];
+        }>(
+          "http://localhost:5122/api/Warehouse/GetWarehouseFarmerProducts",
+          { id: warehouse.id },
+          {
+            headers: {
+              accept: "text/plain",
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        allProducts.push(
+          ...productsResponse.data.data.map((product) => ({
+            id: product.id,
+            itemName: product.product.name,
+            category: product.product.category.split(" / ")[0],
+            quantity: product.quantityAvailable,
+            status: (
+              product.quantityAvailable > 50
+                ? "In Stock"
+                : product.quantityAvailable > 0
+                ? "Low Stock"
+                : "Out of Stock"
+            ) as "In Stock" | "Low Stock" | "Out of Stock",
+            date: new Date(product.addedAt).toISOString().split("T")[0],
+          }))
+        );
+      }
+      setFilteredData(allProducts);
+    } catch (error) {
+      setError("Failed to fetch report data.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleGenerateReport = () => {
-    let data = initialReportData;
+    let data = [...filteredData];
 
     if (startDate) {
       data = data.filter((item) => new Date(item.date) >= new Date(startDate));
@@ -105,9 +139,18 @@ const WarehouseReport: React.FC = () => {
     URL.revokeObjectURL(url);
   };
 
+  if (loading)
+    return (
+      <div className="text-center mt-20 text-2xl text-gray-600">Loading...</div>
+    );
+  if (error)
+    return (
+      <div className="text-center mt-20 text-2xl text-red-500">{error}</div>
+    );
+
   return (
     <div className="max-w-7xl mx-auto p-6 bg-white shadow-lg rounded-lg">
-      <h1 className="text-3xl font-semibold text-gray-800 mb-6">
+      <h1 className="text-3xl font-semibold text-gray-800 mb-6 text-center">
         Warehouse Stock Report
       </h1>
 
@@ -159,39 +202,41 @@ const WarehouseReport: React.FC = () => {
       </div>
 
       {/* Report Table */}
-      <table className="min-w-full bg-gray-50 border border-gray-200 rounded-lg shadow-sm text-black">
-        <thead className="bg-gray-100 text-left text-black">
-          <tr>
-            <th className="px-4 py-3">ID</th>
-            <th className="px-4 py-3">Item Name</th>
-            <th className="px-4 py-3">Category</th>
-            <th className="px-4 py-3">Quantity</th>
-            <th className="px-4 py-3">Status</th>
-            <th className="px-4 py-3">Date</th>
-          </tr>
-        </thead>
-        <tbody>
-          {filteredData.map((item) => (
-            <tr
-              key={item.id}
-              className={`${
-                item.status === "In Stock"
-                  ? "bg-green-100"
-                  : item.status === "Low Stock"
-                  ? "bg-yellow-100"
-                  : "bg-red-100"
-              } hover:bg-gray-200 transition-colors`}
-            >
-              <td className="px-4 py-3">{item.id}</td>
-              <td className="px-4 py-3">{item.itemName}</td>
-              <td className="px-4 py-3">{item.category}</td>
-              <td className="px-4 py-3">{item.quantity}</td>
-              <td className="px-4 py-3 capitalize">{item.status}</td>
-              <td className="px-4 py-3">{item.date}</td>
+      <div className="overflow-x-auto">
+        <table className="min-w-full bg-gray-50 border border-gray-200 rounded-lg shadow-sm text-black">
+          <thead className="bg-gray-100 text-left text-black">
+            <tr>
+              <th className="px-4 py-3">ID</th>
+              <th className="px-4 py-3">Item Name</th>
+              <th className="px-4 py-3">Category</th>
+              <th className="px-4 py-3">Quantity</th>
+              <th className="px-4 py-3">Status</th>
+              <th className="px-4 py-3">Date</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {filteredData.map((item) => (
+              <tr
+                key={item.id}
+                className={`${
+                  item.status === "In Stock"
+                    ? "bg-green-100"
+                    : item.status === "Low Stock"
+                    ? "bg-yellow-100"
+                    : "bg-red-100"
+                } hover:bg-gray-200 transition-colors`}
+              >
+                <td className="px-4 py-3">{item.id}</td>
+                <td className="px-4 py-3">{item.itemName}</td>
+                <td className="px-4 py-3">{item.category}</td>
+                <td className="px-4 py-3">{item.quantity}</td>
+                <td className="px-4 py-3 capitalize">{item.status}</td>
+                <td className="px-4 py-3">{item.date}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
       {/* Download Button */}
       <button

@@ -12,7 +12,10 @@ interface LoginFormData {
 }
 
 const LoginAdmin: React.FC = () => {
-  const [formData, setFormData] = useState<LoginFormData>({ email: "", password: "" });
+  const [formData, setFormData] = useState<LoginFormData>({
+    email: "",
+    password: "",
+  });
   const [error, setError] = useState<string | null>(null);
   const dispatch: AppDispatch = useDispatch();
   const navigate = useNavigate();
@@ -34,11 +37,14 @@ const LoginAdmin: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await fetch("http://localhost:5122/api/Admin/AdminLogin", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
+      const response = await fetch(
+        "http://localhost:5122/api/Admin/AdminLogin",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(formData),
+        }
+      );
 
       const data = await response.json();
 
@@ -62,7 +68,9 @@ const LoginAdmin: React.FC = () => {
           <div className="lg:w-1/2 xl:w-5/12 p-6 sm:p-12">
             <div className="mt-12 flex flex-col items-center">
               <h1 className="text-2xl xl:text-3xl font-extrabold">Sign In</h1>
-              <p className="mt-2 text-center text-gray-600">Sign in to continue!</p>
+              <p className="mt-2 text-center text-gray-600">
+                Sign in to continue!
+              </p>
               <div className="w-full flex-1 mt-8">
                 <div className="mx-auto max-w-lg">
                   <form onSubmit={handleSubmit}>
