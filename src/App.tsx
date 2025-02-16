@@ -1,58 +1,52 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   BrowserRouter as Router,
   Routes,
   Route,
   Navigate,
 } from "react-router-dom";
-import AdminLayout from "./Admin/adminLayout";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "./redux/store";
 import { fetchProducts } from "./redux/productsSlice";
-import { useEffect } from "react";
 
+import AdminLayout from "./Admin/adminLayout";
 import WarehouseLayout from "./Warehouse Manager/WarehouseLayout";
-import WarehouseLogin from "./Warehouse Manager/WarehouseLogin";
-import LoginAdmin from "./Admin/LoginAdmin";
+import Login from "./Admin/LoginAdmin";
 
 const App: React.FC = () => {
   const dispatch: AppDispatch = useDispatch();
+  const isLoggedIn = useSelector((state: RootState) => state.auth.isLoggedIn);
 
   useEffect(() => {
     dispatch(fetchProducts());
   }, [dispatch]);
 
-  const isLoggedIn = useSelector((state: RootState) => state.auth.isLoggedIn);
+  const renderLayout = () => {
+    const adminLoginStatus = sessionStorage.getItem("adminLoggedIn");
+    const managerLoginStatus = sessionStorage.getItem("managerLoggedIn");
+
+    if (adminLoginStatus) {
+      return <AdminLayout />;
+    } else if (managerLoginStatus) {
+      return <WarehouseLayout />;
+    } else {
+      return <Navigate to="/login" replace />;
+    }
+  };
 
   return (
     <Router>
-      {/* The Router is only placed here */}
       <Routes>
-        {/* 
-        <Route path="/admin" element={<AdminLayout />} />
-        <Route path="/warehouse" element={<WarehouseLayout />} /> */}
+        {/* Login Route */}
+        <Route path="/login" element={<Login />} />
 
-        {/* Use this to work on admin layouts */}
-        <Route path="/adminLogin" element={<LoginAdmin />} />
+        {/* Conditional Route for Admin or Warehouse Layout */}
         <Route
-          path="*"
+          path="/*"
           element={
-            isLoggedIn ? <AdminLayout /> : <Navigate to="/adminLogin" replace />
+            isLoggedIn ? renderLayout() : <Navigate to="/login" replace />
           }
         />
-
-        {/* Use this to work on warehouse layouts */}
-        <Route path="/warehouseLogin" element={<WarehouseLogin />} />
-        {/* <Route
-          path="*"
-          element={
-            isLoggedIn ? (
-              <WarehouseLayout />
-            ) : (
-              <Navigate to="/warehouseLogin" replace />
-            )
-          }
-        /> */}
       </Routes>
     </Router>
   );

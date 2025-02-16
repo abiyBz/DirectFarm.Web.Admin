@@ -1,30 +1,36 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useEffect, useState } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { loginSuccess, logout } from "../redux/authSlice";
+import { loginSuccess } from "../redux/authSlice";
 import { AppDispatch, RootState } from "../redux/store";
-import { useSelector } from "react-redux";
 
 interface LoginFormData {
   email: string;
   password: string;
 }
 
-const LoginAdmin: React.FC = () => {
+const Login: React.FC = () => {
   const [formData, setFormData] = useState<LoginFormData>({
     email: "",
     password: "",
   });
+  const [role, setRole] = useState<"admin" | "warehouse">("admin"); // Role selection
   const [error, setError] = useState<string | null>(null);
   const dispatch: AppDispatch = useDispatch();
   const navigate = useNavigate();
   const isLoggedIn = useSelector((state: RootState) => state.auth.isLoggedIn);
 
   useEffect(() => {
-    const loginStatus = sessionStorage.getItem("adminLoggedIn");
-    if (loginStatus) {
-      dispatch(loginSuccess(JSON.parse(loginStatus)));
+    // Check session storage for login status and redirect
+    const adminLoginStatus = sessionStorage.getItem("adminLoggedIn");
+    const managerLoginStatus = sessionStorage.getItem("managerLoggedIn");
+
+    if (adminLoginStatus) {
+      dispatch(loginSuccess(JSON.parse(adminLoginStatus)));
+      navigate("/");
+    } else if (managerLoginStatus) {
+      dispatch(loginSuccess(JSON.parse(managerLoginStatus)));
       navigate("/");
     }
   }, [dispatch, navigate]);
@@ -34,17 +40,30 @@ const LoginAdmin: React.FC = () => {
     setFormData({ ...formData, [name]: value });
   };
 
+  const handleRoleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setRole(e.target.value as "admin" | "warehouse");
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await fetch(
-        "http://localhost:5122/api/Admin/AdminLogin",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(formData),
-        }
-      );
+      // Determine the API endpoint and session storage key based on the selected role
+      let apiUrl: string;
+      let sessionStorageKey: string;
+
+      if (role === "admin") {
+        apiUrl = "http://localhost:5122/api/Admin/AdminLogin";
+        sessionStorageKey = "adminLoggedIn";
+      } else {
+        apiUrl = "http://localhost:5122/api/Warehouse/WarehouseLogin";
+        sessionStorageKey = "managerLoggedIn";
+      }
+
+      const response = await fetch(apiUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
 
       const data = await response.json();
 
@@ -53,11 +72,19 @@ const LoginAdmin: React.FC = () => {
         return;
       }
 
-      sessionStorage.setItem("adminLoggedIn", JSON.stringify(data));
+      // Save login status to session storage and dispatch success action
+      sessionStorage.setItem(sessionStorageKey, JSON.stringify(data));
       dispatch(loginSuccess(data));
-      navigate("/");
-    } catch {
+
+      // Redirect based on role
+      if (role === "admin") {
+        navigate("/");
+      } else {
+        navigate("/");
+      }
+    } catch (error) {
       setError("An unexpected error occurred.");
+      console.error("Login error:", error);
     }
   };
 
@@ -74,6 +101,17 @@ const LoginAdmin: React.FC = () => {
               <div className="w-full flex-1 mt-8">
                 <div className="mx-auto max-w-lg">
                   <form onSubmit={handleSubmit}>
+                    {/* Role Selection */}
+                    <select
+                      className="w-full px-8 py-4 rounded-lg font-medium bg-gray-100 border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white mb-5"
+                      value={role}
+                      onChange={handleRoleChange}
+                    >
+                      <option value="admin">Admin</option>
+                      <option value="warehouse">Warehouse Manager</option>
+                    </select>
+
+                    {/* Email Input */}
                     <input
                       className="w-full px-8 py-4 rounded-lg font-medium bg-gray-100 border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white"
                       type="email"
@@ -83,6 +121,8 @@ const LoginAdmin: React.FC = () => {
                       onChange={handleChange}
                       required
                     />
+
+                    {/* Password Input */}
                     <input
                       className="w-full px-8 py-4 rounded-lg font-medium bg-gray-100 border border-gray-200 placeholder-gray-500 text-sm focus:outline-none focus:border-gray-400 focus:bg-white mt-5"
                       type="password"
@@ -92,6 +132,13 @@ const LoginAdmin: React.FC = () => {
                       onChange={handleChange}
                       required
                     />
+
+                    {/* Error Message */}
+                    {error && (
+                      <p className="text-red-500 text-sm mt-3">{error}</p>
+                    )}
+
+                    {/* Submit Button */}
                     <button
                       className="mt-5 tracking-wide font-semibold bg-green-500 text-gray-100 w-full py-4 rounded-lg hover:bg-green-700 transition-all duration-300 ease-in-out flex items-center justify-center focus:shadow-outline focus:outline-none"
                       type="submit"
@@ -107,7 +154,7 @@ const LoginAdmin: React.FC = () => {
                         <path
                           strokeLinecap="round"
                           strokeLinejoin="round"
-                          d="M17.25 8.25 21 12m0 0-3.75 3.75M21 12H3"
+                          d="M17.25 8.25L21 12m0 0l-3.75 3.75M21 12H3"
                         />
                       </svg>
                       <span className="ml-3">Sign In</span>
@@ -123,4 +170,4 @@ const LoginAdmin: React.FC = () => {
   );
 };
 
-export default LoginAdmin;
+export default Login;
