@@ -7,8 +7,6 @@ import Inventory from "./Inventory";
 import WareDashboard from "./WareDashboard";
 import FarmerRegistration from "./FarmerRegistration";
 
-import WarehouseLogin from "./WarehouseLogin";
-
 const WarehouseLayout: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
@@ -61,7 +59,6 @@ const WarehouseLayout: React.FC = () => {
       >
         <div className="flex-1 p-4">
           <Routes>
-            <Route path="/WarehouseLogin" element={<WarehouseLogin />} />
             <Route path="/" element={<WareDashboard />} />
             <Route path="/Inventory" element={<Inventory />} />
 

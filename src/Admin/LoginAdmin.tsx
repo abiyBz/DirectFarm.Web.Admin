@@ -31,7 +31,6 @@ const Login: React.FC = () => {
       navigate("/");
     } else if (managerLoginStatus) {
       dispatch(loginSuccess(JSON.parse(managerLoginStatus)));
-      navigate("/");
     }
   }, [dispatch, navigate]);
 

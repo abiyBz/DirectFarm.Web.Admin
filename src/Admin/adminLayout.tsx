@@ -16,12 +16,9 @@ import LowStockProducts from "./lowstockproducts";
 import EditProduct from "./EditProduct";
 import WarehouseList from "./WarehouseList";
 import CheckReviews from "./CheckReviews";
-import wareside from "../Warehouse Manager/WareSide";
 
 const AdminLayout: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const adminLoginStatus = sessionStorage.getItem("adminLoggedIn");
-  const managerLoginStatus = sessionStorage.getItem("managerLoggedIn");
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);

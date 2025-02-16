@@ -117,7 +117,7 @@ const Dashboard: React.FC = () => {
       });
     } catch (error) {
       console.error("Failed to parse login response:", error);
-      navigate("/WarehouseLogin"); // Redirect if parsing fails
+      // Redirect if parsing fails
     }
   }, [navigate]);
 
